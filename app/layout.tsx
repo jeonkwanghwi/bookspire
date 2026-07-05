@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Gowun_Batang, Newsreader, Public_Sans } from "next/font/google";
+import { Cormorant_Garamond, Gowun_Batang, Newsreader, Public_Sans } from "next/font/google";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -13,6 +13,12 @@ const gowunBatang = Gowun_Batang({
   variable: "--font-gowun",
   weight: ["400", "700"],
   preload: false,
+});
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-brand",
+  subsets: ["latin"],
+  weight: ["600"],
 });
 
 const publicSans = Public_Sans({
@@ -32,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${newsreader.variable} ${gowunBatang.variable} ${publicSans.variable} antialiased`}>
+    <html lang="ko" className={`${newsreader.variable} ${gowunBatang.variable} ${cormorant.variable} ${publicSans.variable} antialiased`}>
       <body>{children}</body>
     </html>
   );

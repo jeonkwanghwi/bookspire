@@ -162,7 +162,23 @@ export default function Home() {
     <div className={`theme-${cat} min-h-screen flex justify-center [background:var(--page-bg)] transition-colors`}>
       <div className="w-full max-w-[620px] flex flex-col min-h-screen relative">
         <header className="pt-[54px] pb-[30px] px-7 text-center">
-          <div className="font-serif font-medium text-[17px] tracking-[0.08em] text-[var(--brand)]">Bookspire</div>
+          <div className="flex items-center justify-center gap-2">
+            <svg width="30" height="30" viewBox="0 0 150 150" fill="none" aria-label="Bookspire 로고">
+              <g stroke="#2F5D45" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M75 118 C 60 106, 40 104, 24 108 L 24 62 C 40 58, 60 60, 75 72 Z" fill="#EDE4CE" />
+                <path d="M75 118 C 90 106, 110 104, 126 108 L 126 62 C 110 58, 90 60, 75 72 Z" fill="#EDE4CE" />
+                <path d="M75 72 L 75 118" />
+                <path d="M86 80 L 116 84" strokeWidth="3" opacity="0.55" />
+                <path d="M86 90 L 112 93.5" strokeWidth="3" opacity="0.55" />
+              </g>
+              <path d="M75 58 C 71 46, 76 40, 74 28 C 82 38, 84 48, 79 58 Z" fill="#C9843E" />
+              <circle cx="88" cy="34" r="3.2" fill="#C9843E" />
+              <circle cx="63" cy="42" r="2.4" fill="#C9843E" />
+            </svg>
+            <span className="font-[family-name:var(--font-brand)] font-semibold text-[26px] tracking-[0.5px] text-[#23392C]">
+              Book<span className="text-[#2F5D45]">spire</span>
+            </span>
+          </div>
           <div className="mt-6 inline-flex rounded-full border border-[var(--chip-border)] bg-[var(--composer-bg)] p-[3px]">
             <button onClick={() => switchCat("book")} className={cat === "book" ? catActive : catIdle}>
               책
