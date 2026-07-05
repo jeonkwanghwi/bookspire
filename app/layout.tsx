@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { Newsreader, Public_Sans } from "next/font/google";
+import { Gowun_Batang, Newsreader, Public_Sans } from "next/font/google";
 import "./globals.css";
 
 const newsreader = Newsreader({
-  variable: "--font-serif",
+  variable: "--font-newsreader",
   subsets: ["latin"],
   style: ["normal", "italic"],
   weight: ["400", "500"],
+});
+
+const gowunBatang = Gowun_Batang({
+  variable: "--font-gowun",
+  weight: ["400", "700"],
+  preload: false,
 });
 
 const publicSans = Public_Sans({
@@ -26,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${newsreader.variable} ${publicSans.variable} antialiased`}>
+    <html lang="ko" className={`${newsreader.variable} ${gowunBatang.variable} ${publicSans.variable} antialiased`}>
       <body>{children}</body>
     </html>
   );

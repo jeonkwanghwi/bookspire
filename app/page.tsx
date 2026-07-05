@@ -152,7 +152,7 @@ export default function Home() {
               영화
             </button>
           </div>
-          <h1 className="mt-6 font-serif text-[24px] leading-[1.4] text-[var(--ink)] text-balance">
+          <h1 className="mt-6 font-serif text-[25px] leading-[1.5] tracking-[-0.01em] text-[var(--ink)] text-balance">
             {copy.headline}
           </h1>
           <p className="mt-3 text-[13.5px] text-[var(--muted)] tracking-[0.01em]">{copy.subtitle}</p>
