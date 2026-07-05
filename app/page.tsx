@@ -220,6 +220,11 @@ export default function Home() {
         className={`fixed inset-0 -z-10 [background:linear-gradient(to_bottom,#f4f9fc,#dfecf6)] transition-opacity duration-500 ${cat === "movie" ? "opacity-100" : "opacity-0"}`}
       />
       <div className="w-full max-w-[620px] flex flex-col min-h-dvh relative">
+        {visitors !== null && (
+          <p className="fade-in absolute top-4 right-5 text-[11.5px] text-[var(--muted3)] tracking-[0.02em]">
+            오늘 {visitors.toLocaleString()}번의 발걸음이 다녀갔어요
+          </p>
+        )}
         <header className="pt-[54px] pb-[30px] px-7 text-center">
           <div key={cat} className="fade-in flex items-center justify-center gap-2">
             {cat === "book" ? (
@@ -275,11 +280,6 @@ export default function Home() {
             <p className="mt-3 text-[13.5px] text-[var(--muted)] tracking-[0.01em]">{copy.subtitle}</p>
           </div>
           <div className="w-[26px] h-px bg-[var(--accent)] mx-auto mt-6 opacity-60" />
-          {visitors !== null && (
-            <p className="fade-in mt-4 text-[11.5px] text-[var(--muted3)] tracking-[0.02em]">
-              오늘 {visitors.toLocaleString()}번의 발걸음이 다녀갔어요
-            </p>
-          )}
         </header>
 
         <div className="flex items-center gap-[18px] px-[30px] pb-2">
