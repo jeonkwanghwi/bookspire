@@ -68,6 +68,11 @@ function likedSet(): Set<number> {
   }
 }
 
+// 띄어쓰기 무시 매칭용 ("일의 격" ↔ "일의격")
+function norm(s: string) {
+  return s.replace(/\s+/g, "").toLowerCase();
+}
+
 function formatDate(iso: string) {
   const d = new Date(iso);
   return `${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -84,6 +89,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [adminKey, setAdminKey] = useState<string | null>(null);
   const [freshId, setFreshId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const quoteRef = useRef<HTMLTextAreaElement>(null);
   const [visitors, setVisitors] = useState<number | null>(null);
   const counted = useRef(false);
@@ -136,16 +143,24 @@ export default function Home() {
 
   const displayed = useMemo(() => {
     if (!notes) return null;
-    const arr = [...notes];
+    const q = norm(search);
+    const arr = q ? notes.filter((n) => norm(n.book_title).includes(q)) : [...notes];
     if (sort === "popular") arr.sort((a, b) => b.likes - a.likes || +new Date(b.created_at) - +new Date(a.created_at));
     else arr.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
     return arr;
-  }, [notes, sort]);
+  }, [notes, sort, search]);
 
   const switchCat = (c: Category) => {
     if (c === cat) return;
     setCat(c);
     setNotes(null);
+    setSearch("");
+    setSearchOpen(false);
+  };
+
+  const closeSearch = () => {
+    setSearch("");
+    setSearchOpen(false);
   };
 
   const toggleLike = async (id: number) => {
@@ -283,14 +298,51 @@ export default function Home() {
         </header>
 
         <div className="flex items-center gap-[18px] px-[30px] pb-2">
-          <button onClick={() => setSort("popular")} className={sort === "popular" ? tabActive : tabIdle}>
-            인기순
-          </button>
-          <button onClick={() => setSort("recent")} className={sort === "recent" ? tabActive : tabIdle}>
-            최신순
-          </button>
-          <div className="flex-1" />
-          <span className="text-xs text-[var(--muted3)]">{notes ? `${notes.length}개의 기록` : ""}</span>
+          {searchOpen ? (
+            <div className="fade-in flex-1 flex items-center gap-2 border border-[var(--chip-border)] bg-[var(--composer-bg)] rounded-full pl-3.5 pr-2.5 py-[7px] transition-all focus-within:border-[var(--accent)]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="shrink-0 text-[var(--muted3)]" aria-hidden>
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+              <input
+                autoFocus
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Escape" && closeSearch()}
+                placeholder={`${copy.titlePh} 검색`}
+                maxLength={100}
+                className="flex-1 min-w-0 border-none outline-none bg-transparent text-[13px] text-[var(--title-ink)]"
+              />
+              <button
+                onClick={closeSearch}
+                aria-label="검색 닫기"
+                className="cursor-pointer text-[13px] leading-none text-[var(--muted3)] px-1"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <>
+              <button onClick={() => setSort("popular")} className={sort === "popular" ? tabActive : tabIdle}>
+                인기순
+              </button>
+              <button onClick={() => setSort("recent")} className={sort === "recent" ? tabActive : tabIdle}>
+                최신순
+              </button>
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="제목 검색"
+                className="cursor-pointer text-[var(--muted3)] py-1"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden>
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+              </button>
+              <div className="flex-1" />
+            </>
+          )}
+          <span className="text-xs text-[var(--muted3)] whitespace-nowrap">{displayed ? `${displayed.length}개의 기록` : ""}</span>
         </div>
 
         <main className="flex-1 pt-3 px-5 pb-[150px] flex flex-col gap-3.5">
@@ -310,7 +362,9 @@ export default function Home() {
               </div>
             ))}
           {!error && displayed?.length === 0 && (
-            <p className="text-center text-[13px] text-[var(--muted2)] py-8">{copy.empty}</p>
+            <p className="text-center text-[13px] text-[var(--muted2)] py-8">
+              {norm(search) ? `「${search.trim()}」에 대한 기록이 없어요` : copy.empty}
+            </p>
           )}
           {displayed?.map((n) => {
             const on = liked.has(n.id);
