@@ -69,6 +69,15 @@ export default function Home() {
   const [draftBook, setDraftBook] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [adminKey, setAdminKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("admin");
+    if (param === "off") localStorage.removeItem("bookspire:adminKey");
+    else if (param) localStorage.setItem("bookspire:adminKey", param);
+    if (param) window.history.replaceState(null, "", window.location.pathname);
+    setAdminKey(localStorage.getItem("bookspire:adminKey"));
+  }, []);
 
   const load = useCallback(async (s: Sort, c: Category) => {
     try {
@@ -105,6 +114,16 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ on }),
     });
+  };
+
+  const removeNote = async (id: number) => {
+    if (!confirm("이 글을 삭제할까요?")) return;
+    const res = await fetch(`/api/notes/${id}`, {
+      method: "DELETE",
+      headers: { "x-admin-key": adminKey ?? "" },
+    });
+    if (res.ok) setNotes((ns) => ns?.filter((n) => n.id !== id) ?? null);
+    else alert((await res.json()).error ?? "삭제하지 못했습니다");
   };
 
   const save = async () => {
@@ -194,6 +213,14 @@ export default function Home() {
                     </div>
                     <div className="mt-1.5 text-[11.5px] text-[var(--muted2)] tracking-[0.02em]">
                       {n.nickname} · {formatDate(n.created_at)}
+                      {adminKey && (
+                        <button
+                          onClick={() => removeNote(n.id)}
+                          className="ml-2 cursor-pointer text-[11.5px] text-[#A05B4C] underline underline-offset-2"
+                        >
+                          삭제
+                        </button>
+                      )}
                     </div>
                   </div>
                   <button
