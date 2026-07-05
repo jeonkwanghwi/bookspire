@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Note = {
   id: number;
@@ -84,6 +84,14 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [adminKey, setAdminKey] = useState<string | null>(null);
   const [freshId, setFreshId] = useState<number | null>(null);
+  const quoteRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const el = quoteRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [draftQuote]);
   const [toast, setToast] = useState<{ msg: string; kind: "ok" | "error" } | null>(null);
 
   const showToast = useCallback((msg: string, kind: "ok" | "error" = "ok") => {
@@ -191,7 +199,7 @@ export default function Home() {
   const catIdle = `${catBase} text-[var(--muted3)]`;
 
   return (
-    <div className={`theme-${cat} min-h-screen flex justify-center`}>
+    <div className={`theme-${cat} min-h-dvh flex justify-center`}>
       <div
         aria-hidden
         className={`fixed inset-0 -z-10 [background:linear-gradient(to_bottom,#f8f4ec,#ebe1cd)] transition-opacity duration-500 ${cat === "book" ? "opacity-100" : "opacity-0"}`}
@@ -200,7 +208,7 @@ export default function Home() {
         aria-hidden
         className={`fixed inset-0 -z-10 [background:linear-gradient(to_bottom,#f4f9fc,#dfecf6)] transition-opacity duration-500 ${cat === "movie" ? "opacity-100" : "opacity-0"}`}
       />
-      <div className="w-full max-w-[620px] flex flex-col min-h-screen relative">
+      <div className="w-full max-w-[620px] flex flex-col min-h-dvh relative">
         <header className="pt-[54px] pb-[30px] px-7 text-center">
           <div key={cat} className="fade-in flex items-center justify-center gap-2">
             {cat === "book" ? (
@@ -295,7 +303,7 @@ export default function Home() {
                 key={n.id}
                 className={`${n.id === freshId ? "card-fresh" : "rise-in"} bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-[26px] pt-[26px] pb-5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]`}
               >
-                <p className="font-serif text-[22px] leading-normal text-[var(--ink)] mb-[18px] text-pretty">
+                <p className="font-serif text-[22px] leading-normal text-[var(--ink)] mb-[18px] text-pretty whitespace-pre-line">
                   {n.quote}
                 </p>
                 <div className="flex items-end justify-between gap-4">
@@ -346,7 +354,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className="sticky bottom-0 px-4 pt-3.5 pb-[18px]">
+        <div className="sticky bottom-0 px-4 pt-3.5 pb-[calc(18px+env(safe-area-inset-bottom))]">
           <div
             aria-hidden
             className={`absolute inset-0 [background:linear-gradient(to_top,#ece3d2_72%,transparent)] transition-opacity duration-500 ${cat === "book" ? "opacity-100" : "opacity-0"}`}
@@ -356,11 +364,14 @@ export default function Home() {
             className={`absolute inset-0 [background:linear-gradient(to_top,#e2eef6_72%,transparent)] transition-opacity duration-500 ${cat === "movie" ? "opacity-100" : "opacity-0"}`}
           />
           <div className="relative bg-[var(--composer-bg)] border border-[var(--chip-border)] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5">
-            <input
+            <textarea
+              ref={quoteRef}
               value={draftQuote}
               onChange={(e) => setDraftQuote(e.target.value)}
               placeholder={copy.quotePh}
-              className="border-none outline-none bg-transparent font-serif text-lg text-[var(--ink)] w-full"
+              maxLength={200}
+              rows={1}
+              className="border-none outline-none bg-transparent font-serif text-lg text-[var(--ink)] w-full resize-none overflow-hidden leading-relaxed"
             />
             <div className="flex items-center gap-2.5 border-t border-[var(--composer-divider)] pt-2.5">
               <input
@@ -368,8 +379,12 @@ export default function Home() {
                 onChange={(e) => setDraftBook(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && save()}
                 placeholder={copy.titlePh}
+                maxLength={100}
                 className="border-none outline-none bg-transparent text-[13.5px] text-[var(--title-ink)] flex-1 min-w-0"
               />
+              {draftQuote.length >= 180 && (
+                <span className="text-[11px] text-[var(--muted2)] whitespace-nowrap">{draftQuote.length}/200</span>
+              )}
               <button
                 onClick={save}
                 className={`text-[13px] font-semibold px-5 py-[9px] rounded-md whitespace-nowrap transition-all ${

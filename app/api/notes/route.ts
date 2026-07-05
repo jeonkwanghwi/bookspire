@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
     if (!quote || !bookTitle || !nickname) {
       return NextResponse.json({ error: "quote, bookTitle, nickname은 필수입니다" }, { status: 400 });
     }
+    if (quote.length > 200 || bookTitle.length > 100 || nickname.length > 40) {
+      return NextResponse.json({ error: "입력 길이 제한을 초과했습니다 (구절 200자, 제목 100자)" }, { status: 400 });
+    }
 
     const supabase = getSupabase();
     const { data, error } = await supabase
