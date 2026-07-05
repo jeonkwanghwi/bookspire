@@ -83,9 +83,20 @@ GRANT EXECUTE ON FUNCTION public.add_visit() TO service_role;
 
 - DB 접근은 전부 Next.js API 라우트(서버)를 거친다. 브라우저에서 Supabase에 직접 붙지 않으므로 RLS 정책 설계 없이 시작 가능 (테이블 RLS는 켜두고, 서버는 service role key 사용).
 
-## 배포
+## 배포 (bookspire.vercel.app)
 
-1. Supabase 프로젝트 생성 → 위 스키마 실행 → URL/key 발급
-2. Vercel에 GitHub 레포 연결 → 환경변수(URL/key) 등록 → 끝
+1. Supabase 프로젝트 생성 → SQL Editor에서 위 스키마 실행 → Project URL과 Secret key(`sb_secret_...`, API Keys → Secret keys에서 생성) 확보
+2. Vercel에 GitHub 레포 연결 → 환경변수 3개 등록:
+   - `SUPABASE_URL` — Supabase Project URL
+   - `SUPABASE_SERVICE_ROLE_KEY` — Secret key (구 service_role에 해당)
+   - `ADMIN_KEY` — 관리자 삭제용 키 (`openssl rand -hex 16`으로 생성)
+3. Vercel 프로젝트 → Analytics 탭 → Enable (방문 분석 대시보드)
 
-둘 다 무료 티어로 충분. 이 규모(테이블 1개, 텍스트 데이터)에서는 과금 걱정 없음.
+주의: 환경변수를 추가/변경하면 반드시 Redeploy 해야 반영된다. main에 push하면 자동 재배포.
+
+둘 다 무료 티어로 충분. 이 규모(텍스트 데이터)에서는 과금 걱정 없음.
+
+### 관리자 모드 사용법
+
+- `https://<주소>/?admin=<ADMIN_KEY>`로 한 번 접속 → 그 브라우저에 삭제 버튼 표시 (키는 localStorage 저장, 주소창에서는 자동 제거)
+- 해제: `?admin=off` / 키 교체: Vercel의 `ADMIN_KEY` 값 변경 후 Redeploy
