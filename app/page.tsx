@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type Note = {
   id: number;
@@ -83,6 +83,13 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adminKey, setAdminKey] = useState<string | null>(null);
+  const [freshId, setFreshId] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ msg: string; kind: "ok" | "error" } | null>(null);
+
+  const showToast = useCallback((msg: string, kind: "ok" | "error" = "ok") => {
+    setToast({ msg, kind });
+    setTimeout(() => setToast((t) => (t?.msg === msg ? null : t)), 2000);
+  }, []);
 
   useEffect(() => {
     const param = new URLSearchParams(window.location.search).get("admin");
@@ -92,9 +99,9 @@ export default function Home() {
     setAdminKey(localStorage.getItem("bookspire:adminKey"));
   }, []);
 
-  const load = useCallback(async (s: Sort, c: Category) => {
+  const load = useCallback(async (c: Category) => {
     try {
-      const res = await fetch(`/api/notes?sort=${s}&category=${c}`);
+      const res = await fetch(`/api/notes?sort=recent&category=${c}`);
       if (!res.ok) throw new Error((await res.json()).error);
       setNotes(await res.json());
       setError(null);
@@ -105,8 +112,16 @@ export default function Home() {
 
   useEffect(() => {
     setLiked(likedSet());
-    load(sort, cat);
-  }, [sort, cat, load]);
+    load(cat);
+  }, [cat, load]);
+
+  const displayed = useMemo(() => {
+    if (!notes) return null;
+    const arr = [...notes];
+    if (sort === "popular") arr.sort((a, b) => b.likes - a.likes || +new Date(b.created_at) - +new Date(a.created_at));
+    else arr.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    return arr;
+  }, [notes, sort]);
 
   const switchCat = (c: Category) => {
     if (c === cat) return;
@@ -151,12 +166,15 @@ export default function Home() {
         body: JSON.stringify({ quote, bookTitle, nickname: myNickname(), category: cat }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
+      const created: Note = await res.json();
+      setNotes((ns) => [created, ...(ns ?? [])]);
+      setSort("recent");
+      setFreshId(created.id);
       setDraftQuote("");
       setDraftBook("");
-      if (sort === "recent") await load("recent", cat);
-      else setSort("recent");
+      showToast("기록했어요");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "저장하지 못했습니다");
+      showToast(e instanceof Error ? e.message : "저장하지 못했습니다", "error");
     } finally {
       setSaving(false);
     }
@@ -172,10 +190,18 @@ export default function Home() {
   const catIdle = `${catBase} text-[var(--muted3)]`;
 
   return (
-    <div className={`theme-${cat} min-h-screen flex justify-center [background:var(--page-bg)] transition-colors`}>
+    <div className={`theme-${cat} min-h-screen flex justify-center`}>
+      <div
+        aria-hidden
+        className={`fixed inset-0 -z-10 [background:linear-gradient(to_bottom,#f8f4ec,#ebe1cd)] transition-opacity duration-500 ${cat === "book" ? "opacity-100" : "opacity-0"}`}
+      />
+      <div
+        aria-hidden
+        className={`fixed inset-0 -z-10 [background:linear-gradient(to_bottom,#f4f9fc,#dfecf6)] transition-opacity duration-500 ${cat === "movie" ? "opacity-100" : "opacity-0"}`}
+      />
       <div className="w-full max-w-[620px] flex flex-col min-h-screen relative">
         <header className="pt-[54px] pb-[30px] px-7 text-center">
-          <div className="flex items-center justify-center gap-2">
+          <div key={cat} className="fade-in flex items-center justify-center gap-2">
             {cat === "book" ? (
               <svg width="30" height="30" viewBox="0 0 150 150" fill="none" aria-label="Bookspire 로고">
                 <g stroke="#2F5D45" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
@@ -222,10 +248,12 @@ export default function Home() {
               영화
             </button>
           </div>
-          <h1 className="mt-6 font-serif text-[25px] leading-[1.5] tracking-[-0.01em] text-[var(--ink)] text-balance">
-            {copy.headline}
-          </h1>
-          <p className="mt-3 text-[13.5px] text-[var(--muted)] tracking-[0.01em]">{copy.subtitle}</p>
+          <div key={`copy-${cat}`} className="fade-in">
+            <h1 className="mt-6 font-serif text-[25px] leading-[1.5] tracking-[-0.01em] text-[var(--ink)] text-balance">
+              {copy.headline}
+            </h1>
+            <p className="mt-3 text-[13.5px] text-[var(--muted)] tracking-[0.01em]">{copy.subtitle}</p>
+          </div>
           <div className="w-[26px] h-px bg-[var(--accent)] mx-auto mt-6 opacity-60" />
         </header>
 
@@ -244,15 +272,27 @@ export default function Home() {
           {error && (
             <p className="text-center text-[13px] text-[#A05B4C] py-8">{error}</p>
           )}
-          {!error && notes?.length === 0 && (
+          {!error &&
+            !displayed &&
+            [0, 1, 2].map((i) => (
+              <div
+                key={`skel-${i}`}
+                className="fade-in animate-pulse bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-[26px] pt-[26px] pb-5"
+              >
+                <div className="h-[18px] w-3/4 rounded bg-[var(--card-border)] opacity-60 mb-3" />
+                <div className="h-[18px] w-1/2 rounded bg-[var(--card-border)] opacity-60 mb-7" />
+                <div className="h-[11px] w-28 rounded bg-[var(--card-border)] opacity-50" />
+              </div>
+            ))}
+          {!error && displayed?.length === 0 && (
             <p className="text-center text-[13px] text-[var(--muted2)] py-8">{copy.empty}</p>
           )}
-          {notes?.map((n) => {
+          {displayed?.map((n) => {
             const on = liked.has(n.id);
             return (
               <article
                 key={n.id}
-                className="rise-in bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-[26px] pt-[26px] pb-5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]"
+                className={`${n.id === freshId ? "card-fresh" : "rise-in"} bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-[26px] pt-[26px] pb-5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]`}
               >
                 <p className="font-serif text-[22px] leading-normal text-[var(--ink)] mb-[18px] text-pretty">
                   {n.quote}
@@ -282,7 +322,9 @@ export default function Home() {
                         : "border-[var(--chip-border)] bg-transparent text-[var(--muted2)]"
                     }`}
                   >
-                    <span className="text-[13px]">{on ? "♥" : "♡"}</span>
+                    <span key={on ? "on" : "off"} className={`text-[13px] ${on ? "heart-pop" : ""}`}>
+                      {on ? "♥" : "♡"}
+                    </span>
                     <span className="text-[12.5px] font-semibold">{n.likes}</span>
                   </button>
                 </div>
@@ -291,8 +333,28 @@ export default function Home() {
           })}
         </main>
 
-        <div className="sticky bottom-0 px-4 pt-3.5 pb-[18px] [background:linear-gradient(to_top,var(--fade)_72%,transparent)]">
-          <div className="bg-[var(--composer-bg)] border border-[var(--chip-border)] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5">
+        {toast && (
+          <div
+            className={`rise-in fixed bottom-[130px] left-1/2 -translate-x-1/2 z-50 text-[13px] font-medium px-5 py-2.5 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.12)] ${
+              toast.kind === "error"
+                ? "bg-[#A05B4C] text-[#FDF6F3]"
+                : "bg-[var(--accent-deep)] text-[var(--save-on-text)]"
+            }`}
+          >
+            {toast.msg}
+          </div>
+        )}
+
+        <div className="sticky bottom-0 px-4 pt-3.5 pb-[18px]">
+          <div
+            aria-hidden
+            className={`absolute inset-0 [background:linear-gradient(to_top,#ece3d2_72%,transparent)] transition-opacity duration-500 ${cat === "book" ? "opacity-100" : "opacity-0"}`}
+          />
+          <div
+            aria-hidden
+            className={`absolute inset-0 [background:linear-gradient(to_top,#e2eef6_72%,transparent)] transition-opacity duration-500 ${cat === "movie" ? "opacity-100" : "opacity-0"}`}
+          />
+          <div className="relative bg-[var(--composer-bg)] border border-[var(--chip-border)] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5">
             <input
               value={draftQuote}
               onChange={(e) => setDraftQuote(e.target.value)}
@@ -315,7 +377,7 @@ export default function Home() {
                     : "bg-[var(--save-off-bg)] text-[var(--save-off-text)] cursor-default"
                 }`}
               >
-                저장
+                {saving ? "저장 중…" : "저장"}
               </button>
             </div>
           </div>
