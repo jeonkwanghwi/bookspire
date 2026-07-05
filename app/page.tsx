@@ -85,6 +85,17 @@ export default function Home() {
   const [adminKey, setAdminKey] = useState<string | null>(null);
   const [freshId, setFreshId] = useState<number | null>(null);
   const quoteRef = useRef<HTMLTextAreaElement>(null);
+  const [visitors, setVisitors] = useState<number | null>(null);
+  const counted = useRef(false);
+
+  useEffect(() => {
+    if (counted.current) return;
+    counted.current = true;
+    fetch("/api/visit", { method: "POST" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setVisitors(d.today))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const el = quoteRef.current;
@@ -264,6 +275,11 @@ export default function Home() {
             <p className="mt-3 text-[13.5px] text-[var(--muted)] tracking-[0.01em]">{copy.subtitle}</p>
           </div>
           <div className="w-[26px] h-px bg-[var(--accent)] mx-auto mt-6 opacity-60" />
+          {visitors !== null && (
+            <p className="fade-in mt-4 text-[11.5px] text-[var(--muted3)] tracking-[0.02em]">
+              오늘 {visitors.toLocaleString()}번의 발걸음이 다녀갔어요
+            </p>
+          )}
         </header>
 
         <div className="flex items-center gap-[18px] px-[30px] pb-2">

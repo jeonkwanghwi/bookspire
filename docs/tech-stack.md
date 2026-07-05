@@ -54,10 +54,27 @@ RETURNS void AS $$
   UPDATE notes SET likes = GREATEST(0, likes + delta) WHERE id = note_id;
 $$ LANGUAGE sql;
 
+-- 방문 카운터 (일별, 중복 접속 포함 — KST 기준)
+CREATE TABLE visits (
+  day   DATE PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0
+);
+
+ALTER TABLE visits ENABLE ROW LEVEL SECURITY;
+
+CREATE FUNCTION add_visit()
+RETURNS integer AS $$
+  INSERT INTO visits (day, count) VALUES ((now() AT TIME ZONE 'Asia/Seoul')::date, 1)
+  ON CONFLICT (day) DO UPDATE SET count = visits.count + 1
+  RETURNING count;
+$$ LANGUAGE sql;
+
 -- 서버(secret key = service_role)에 권한 부여 — 최근 프로젝트는 자동 GRANT가 없음
 GRANT ALL ON TABLE public.notes TO service_role;
+GRANT ALL ON TABLE public.visits TO service_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 GRANT EXECUTE ON FUNCTION public.change_likes(BIGINT, INTEGER) TO service_role;
+GRANT EXECUTE ON FUNCTION public.add_visit() TO service_role;
 ```
 
 - DB 접근은 전부 Next.js API 라우트(서버)를 거친다. 브라우저에서 Supabase에 직접 붙지 않으므로 RLS 정책 설계 없이 시작 가능 (테이블 RLS는 켜두고, 서버는 service role key 사용).
