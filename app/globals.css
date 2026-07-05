@@ -23,8 +23,8 @@ body {
 
 /* 카테고리별 무드 — 책: 크림/그린, 영화: 하늘색~파란색 그라데이션 */
 .theme-book {
-  --page-bg: #f5f1e8;
-  --fade: #f5f1e8;
+  --page-bg: linear-gradient(to bottom, #f8f4ec, #ebe1cd);
+  --fade: #ece3d2;
   --brand: #3a2e24;
   --ink: #33291f;
   --title-ink: #6e6151;
