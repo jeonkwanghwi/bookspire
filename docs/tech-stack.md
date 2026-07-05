@@ -23,13 +23,17 @@
 ```
 bookspire/
 ├── app/
-│   ├── page.tsx          # 메인 화면 (피드 + 입력 폼)
+│   ├── page.tsx          # 메인 화면 (피드 + 입력 폼, 탭/테마/토스트 포함)
+│   ├── layout.tsx        # 폰트, 메타데이터(OG), Analytics
+│   ├── icon.png          # 파비콘 / opengraph-image.png  # 공유 미리보기
 │   └── api/
-│       ├── notes/route.ts        # GET(목록), POST(작성)
-│       └── notes/[id]/like/route.ts  # POST(추천)
+│       ├── notes/route.ts            # GET(목록), POST(작성, 길이 검증)
+│       ├── notes/[id]/route.ts       # DELETE(관리자, x-admin-key 검증)
+│       ├── notes/[id]/like/route.ts  # POST(추천 ±1)
+│       └── visit/route.ts            # POST(방문 카운트)
 ├── lib/
 │   └── supabase.ts       # Supabase 클라이언트 생성
-├── .env.local            # SUPABASE_URL, SUPABASE_KEY (gitignore)
+├── .env.local            # SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_KEY (gitignore)
 └── docs/
 ```
 
