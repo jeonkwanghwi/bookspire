@@ -12,6 +12,26 @@ type Note = {
 };
 
 type Sort = "popular" | "recent";
+type Category = "book" | "movie";
+
+const COPY = {
+  book: {
+    headline: "완독을 해야만 영감을 얻는 건 아니잖아요?",
+    subtitle: "한줄에서 오는 영감, 비로소 시작되는 정독",
+    quotePh: "마음에 남은 한 구절",
+    titlePh: "책 제목",
+    empty: "아직 기록이 없어요. 첫 구절을 남겨보세요.",
+    wrap: ["『", "』"],
+  },
+  movie: {
+    headline: "엔딩 크레딧까지 봐야만 영감을 얻는 건 아니잖아요?",
+    subtitle: "한마디에서 오는 영감, 비로소 시작되는 정주행",
+    quotePh: "마음에 남은 한마디",
+    titlePh: "영화 제목",
+    empty: "아직 기록이 없어요. 첫 한마디를 남겨보세요.",
+    wrap: ["《", "》"],
+  },
+} as const;
 
 const NICKNAMES = [
   "한밤의독자", "책장넘기는소리", "조용한오후", "문장수집가",
@@ -41,6 +61,7 @@ function formatDate(iso: string) {
 }
 
 export default function Home() {
+  const [cat, setCat] = useState<Category>("book");
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [sort, setSort] = useState<Sort>("popular");
   const [liked, setLiked] = useState<Set<number>>(new Set());
@@ -49,9 +70,9 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (s: Sort) => {
+  const load = useCallback(async (s: Sort, c: Category) => {
     try {
-      const res = await fetch(`/api/notes?sort=${s}`);
+      const res = await fetch(`/api/notes?sort=${s}&category=${c}`);
       if (!res.ok) throw new Error((await res.json()).error);
       setNotes(await res.json());
       setError(null);
@@ -62,8 +83,14 @@ export default function Home() {
 
   useEffect(() => {
     setLiked(likedSet());
-    load(sort);
-  }, [sort, load]);
+    load(sort, cat);
+  }, [sort, cat, load]);
+
+  const switchCat = (c: Category) => {
+    if (c === cat) return;
+    setCat(c);
+    setNotes(null);
+  };
 
   const toggleLike = async (id: number) => {
     const on = !liked.has(id);
@@ -89,12 +116,12 @@ export default function Home() {
       const res = await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quote, bookTitle, nickname: myNickname() }),
+        body: JSON.stringify({ quote, bookTitle, nickname: myNickname(), category: cat }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
       setDraftQuote("");
       setDraftBook("");
-      if (sort === "recent") await load("recent");
+      if (sort === "recent") await load("recent", cat);
       else setSort("recent");
     } catch (e) {
       setError(e instanceof Error ? e.message : "저장하지 못했습니다");
@@ -103,23 +130,33 @@ export default function Home() {
     }
   };
 
+  const copy = COPY[cat];
   const canSave = draftQuote.trim() && draftBook.trim() && !saving;
   const tabBase = "cursor-pointer text-[13.5px] py-1 tracking-[0.01em] border-b-[1.5px]";
-  const tabActive = `${tabBase} text-[#4A5940] font-semibold border-[#8A9A7B]`;
-  const tabIdle = `${tabBase} text-[#B0A28E] border-transparent`;
+  const tabActive = `${tabBase} text-[var(--accent-deep)] font-semibold border-[var(--accent)]`;
+  const tabIdle = `${tabBase} text-[var(--muted3)] border-transparent`;
+  const catBase = "cursor-pointer text-[13px] px-4 py-1.5 rounded-full transition-all";
+  const catActive = `${catBase} bg-[var(--accent)] text-[var(--save-on-text)] font-semibold`;
+  const catIdle = `${catBase} text-[var(--muted3)]`;
 
   return (
-    <div className="min-h-screen flex justify-center">
+    <div className={`theme-${cat} min-h-screen flex justify-center [background:var(--page-bg)] transition-colors`}>
       <div className="w-full max-w-[620px] flex flex-col min-h-screen relative">
         <header className="pt-[54px] pb-[30px] px-7 text-center">
-          <div className="font-serif font-medium text-[17px] tracking-[0.08em] text-[#3A2E24]">Bookspire</div>
-          <h1 className="mt-7 font-serif text-[24px] leading-[1.4] text-[#33291F] text-balance">
-            완독을 해야만 영감을 얻는 건 아니잖아요?
+          <div className="font-serif font-medium text-[17px] tracking-[0.08em] text-[var(--brand)]">Bookspire</div>
+          <div className="mt-6 inline-flex rounded-full border border-[var(--chip-border)] bg-[var(--composer-bg)] p-[3px]">
+            <button onClick={() => switchCat("book")} className={cat === "book" ? catActive : catIdle}>
+              책
+            </button>
+            <button onClick={() => switchCat("movie")} className={cat === "movie" ? catActive : catIdle}>
+              영화
+            </button>
+          </div>
+          <h1 className="mt-6 font-serif text-[24px] leading-[1.4] text-[var(--ink)] text-balance">
+            {copy.headline}
           </h1>
-          <p className="mt-3 text-[13.5px] text-[#9C8E7C] tracking-[0.01em]">
-            한줄에서 오는 영감, 비로소 시작되는 정독
-          </p>
-          <div className="w-[26px] h-px bg-[#8A9A7B] mx-auto mt-6 opacity-60" />
+          <p className="mt-3 text-[13.5px] text-[var(--muted)] tracking-[0.01em]">{copy.subtitle}</p>
+          <div className="w-[26px] h-px bg-[var(--accent)] mx-auto mt-6 opacity-60" />
         </header>
 
         <div className="flex items-center gap-[18px] px-[30px] pb-2">
@@ -130,7 +167,7 @@ export default function Home() {
             최신순
           </button>
           <div className="flex-1" />
-          <span className="text-xs text-[#B0A28E]">{notes ? `${notes.length}개의 기록` : ""}</span>
+          <span className="text-xs text-[var(--muted3)]">{notes ? `${notes.length}개의 기록` : ""}</span>
         </div>
 
         <main className="flex-1 pt-3 px-5 pb-[150px] flex flex-col gap-3.5">
@@ -138,24 +175,24 @@ export default function Home() {
             <p className="text-center text-[13px] text-[#A05B4C] py-8">{error}</p>
           )}
           {!error && notes?.length === 0 && (
-            <p className="text-center text-[13px] text-[#A99C88] py-8">
-              아직 기록이 없어요. 첫 구절을 남겨보세요.
-            </p>
+            <p className="text-center text-[13px] text-[var(--muted2)] py-8">{copy.empty}</p>
           )}
           {notes?.map((n) => {
             const on = liked.has(n.id);
             return (
               <article
                 key={n.id}
-                className="rise-in bg-[#FBF8F1] border border-[#EAE2D2] rounded px-[26px] pt-[26px] pb-5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]"
+                className="rise-in bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-[26px] pt-[26px] pb-5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]"
               >
-                <p className="font-serif text-[22px] leading-normal text-[#33291F] mb-[18px] text-pretty">
+                <p className="font-serif text-[22px] leading-normal text-[var(--ink)] mb-[18px] text-pretty">
                   {n.quote}
                 </p>
                 <div className="flex items-end justify-between gap-4">
                   <div className="min-w-0">
-                    <div className="font-serif italic text-sm text-[#6E6151]">『{n.book_title}』</div>
-                    <div className="mt-1.5 text-[11.5px] text-[#A99C88] tracking-[0.02em]">
+                    <div className="font-serif italic text-sm text-[var(--title-ink)]">
+                      {copy.wrap[0]}{n.book_title}{copy.wrap[1]}
+                    </div>
+                    <div className="mt-1.5 text-[11.5px] text-[var(--muted2)] tracking-[0.02em]">
                       {n.nickname} · {formatDate(n.created_at)}
                     </div>
                   </div>
@@ -163,8 +200,8 @@ export default function Home() {
                     onClick={() => toggleLike(n.id)}
                     className={`flex items-center gap-[5px] border rounded-full px-[11px] py-[5px] cursor-pointer transition-all ${
                       on
-                        ? "border-[#8A9A7B] bg-[#EDF1E5] text-[#4A5940]"
-                        : "border-[#E3DAC8] bg-transparent text-[#A99C88]"
+                        ? "border-[var(--accent)] bg-[var(--accent-soft)] text-[var(--accent-deep)]"
+                        : "border-[var(--chip-border)] bg-transparent text-[var(--muted2)]"
                     }`}
                   >
                     <span className="text-[13px]">{on ? "♥" : "♡"}</span>
@@ -176,28 +213,28 @@ export default function Home() {
           })}
         </main>
 
-        <div className="sticky bottom-0 px-4 pt-3.5 pb-[18px] bg-gradient-to-t from-[#F5F1E8] from-72% to-transparent">
-          <div className="bg-[#FFFDF8] border border-[#E3DAC8] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5">
+        <div className="sticky bottom-0 px-4 pt-3.5 pb-[18px] [background:linear-gradient(to_top,var(--fade)_72%,transparent)]">
+          <div className="bg-[var(--composer-bg)] border border-[var(--chip-border)] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5">
             <input
               value={draftQuote}
               onChange={(e) => setDraftQuote(e.target.value)}
-              placeholder="마음에 남은 한 구절"
-              className="border-none outline-none bg-transparent font-serif text-lg text-[#33291F] w-full"
+              placeholder={copy.quotePh}
+              className="border-none outline-none bg-transparent font-serif text-lg text-[var(--ink)] w-full"
             />
-            <div className="flex items-center gap-2.5 border-t border-[#F0E9DA] pt-2.5">
+            <div className="flex items-center gap-2.5 border-t border-[var(--composer-divider)] pt-2.5">
               <input
                 value={draftBook}
                 onChange={(e) => setDraftBook(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && save()}
-                placeholder="책 제목"
-                className="border-none outline-none bg-transparent text-[13.5px] text-[#6E6151] flex-1 min-w-0"
+                placeholder={copy.titlePh}
+                className="border-none outline-none bg-transparent text-[13.5px] text-[var(--title-ink)] flex-1 min-w-0"
               />
               <button
                 onClick={save}
                 className={`text-[13px] font-semibold px-5 py-[9px] rounded-md whitespace-nowrap transition-all ${
                   canSave
-                    ? "bg-[#8A9A7B] text-[#FDFCF8] cursor-pointer"
-                    : "bg-[#EDE6D8] text-[#C3B7A3] cursor-default"
+                    ? "bg-[var(--accent)] text-[var(--save-on-text)] cursor-pointer"
+                    : "bg-[var(--save-off-bg)] text-[var(--save-off-text)] cursor-default"
                 }`}
               >
                 저장

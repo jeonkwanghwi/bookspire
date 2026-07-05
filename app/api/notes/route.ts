@@ -4,8 +4,9 @@ import { getSupabase } from "@/lib/supabase";
 export async function GET(req: NextRequest) {
   try {
     const sort = req.nextUrl.searchParams.get("sort") ?? "popular";
+    const category = req.nextUrl.searchParams.get("category") === "movie" ? "movie" : "book";
     const supabase = getSupabase();
-    const query = supabase.from("notes").select("*");
+    const query = supabase.from("notes").select("*").eq("category", category);
     const { data, error } =
       sort === "recent"
         ? await query.order("created_at", { ascending: false })
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
     const quote = String(body.quote ?? "").trim();
     const bookTitle = String(body.bookTitle ?? "").trim();
     const nickname = String(body.nickname ?? "").trim();
+    const category = body.category === "movie" ? "movie" : "book";
     if (!quote || !bookTitle || !nickname) {
       return NextResponse.json({ error: "quote, bookTitle, nickname은 필수입니다" }, { status: 400 });
     }
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from("notes")
-      .insert({ quote, book_title: bookTitle, nickname })
+      .insert({ quote, book_title: bookTitle, nickname, category })
       .select()
       .single();
 

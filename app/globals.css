@@ -11,13 +11,58 @@
 }
 
 input::placeholder {
-  color: #a99c88;
+  color: var(--muted2);
 }
 
 body {
   background: #f5f1e8;
   color: #2e2620;
   font-family: var(--font-sans), sans-serif;
+}
+
+/* 카테고리별 무드 — 책: 크림/그린, 영화: 하늘색~파란색 그라데이션 */
+.theme-book {
+  --page-bg: #f5f1e8;
+  --fade: #f5f1e8;
+  --brand: #3a2e24;
+  --ink: #33291f;
+  --title-ink: #6e6151;
+  --muted: #9c8e7c;
+  --muted2: #a99c88;
+  --muted3: #b0a28e;
+  --accent: #8a9a7b;
+  --accent-deep: #4a5940;
+  --accent-soft: #edf1e5;
+  --card-bg: #fbf8f1;
+  --card-border: #eae2d2;
+  --chip-border: #e3dac8;
+  --composer-bg: #fffdf8;
+  --composer-divider: #f0e9da;
+  --save-on-text: #fdfcf8;
+  --save-off-bg: #ede6d8;
+  --save-off-text: #c3b7a3;
+}
+
+.theme-movie {
+  --page-bg: linear-gradient(to bottom, #f4f9fc, #dfecf6);
+  --fade: #e2eef6;
+  --brand: #2e4356;
+  --ink: #24384a;
+  --title-ink: #5a7184;
+  --muted: #8ca2b5;
+  --muted2: #9bb0c2;
+  --muted3: #a5b8c8;
+  --accent: #6e96b8;
+  --accent-deep: #3e5a73;
+  --accent-soft: #e3eef7;
+  --card-bg: #fafcfe;
+  --card-border: #dce8f1;
+  --chip-border: #cfe0ed;
+  --composer-bg: #fcfeff;
+  --composer-divider: #e4eef5;
+  --save-on-text: #f8fbfd;
+  --save-off-bg: #e1eaf1;
+  --save-off-text: #a9bccb;
 }
 
 @keyframes rise-in {

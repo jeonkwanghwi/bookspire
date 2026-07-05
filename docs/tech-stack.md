@@ -42,6 +42,7 @@ CREATE TABLE notes (
   book_title TEXT NOT NULL,
   nickname   TEXT NOT NULL,
   likes      INTEGER NOT NULL DEFAULT 0,
+  category   TEXT NOT NULL DEFAULT 'book' CHECK (category IN ('book', 'movie')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
