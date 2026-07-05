@@ -33,6 +33,11 @@ const COPY = {
   },
 } as const;
 
+const BRAND = {
+  book: { name: "Book", nameCls: "text-[#23392C]", spireCls: "text-[#2F5D45]" },
+  movie: { name: "Cine", nameCls: "text-[#203A54]", spireCls: "text-[#1E4E8C]" },
+} as const;
+
 const NICKNAMES = [
   "한밤의독자", "책장넘기는소리", "조용한오후", "문장수집가",
   "여백을읽다", "오늘의밑줄", "창밖을보며", "느린페이지",
@@ -163,20 +168,42 @@ export default function Home() {
       <div className="w-full max-w-[620px] flex flex-col min-h-screen relative">
         <header className="pt-[54px] pb-[30px] px-7 text-center">
           <div className="flex items-center justify-center gap-2">
-            <svg width="30" height="30" viewBox="0 0 150 150" fill="none" aria-label="Bookspire 로고">
-              <g stroke="#2F5D45" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M75 118 C 60 106, 40 104, 24 108 L 24 62 C 40 58, 60 60, 75 72 Z" fill="#EDE4CE" />
-                <path d="M75 118 C 90 106, 110 104, 126 108 L 126 62 C 110 58, 90 60, 75 72 Z" fill="#EDE4CE" />
-                <path d="M75 72 L 75 118" />
-                <path d="M86 80 L 116 84" strokeWidth="3" opacity="0.55" />
-                <path d="M86 90 L 112 93.5" strokeWidth="3" opacity="0.55" />
-              </g>
-              <path d="M75 58 C 71 46, 76 40, 74 28 C 82 38, 84 48, 79 58 Z" fill="#C9843E" />
-              <circle cx="88" cy="34" r="3.2" fill="#C9843E" />
-              <circle cx="63" cy="42" r="2.4" fill="#C9843E" />
-            </svg>
-            <span className="font-[family-name:var(--font-brand)] font-semibold text-[26px] tracking-[0.5px] text-[#23392C]">
-              Book<span className="text-[#2F5D45]">spire</span>
+            {cat === "book" ? (
+              <svg width="30" height="30" viewBox="0 0 150 150" fill="none" aria-label="Bookspire 로고">
+                <g stroke="#2F5D45" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M75 118 C 60 106, 40 104, 24 108 L 24 62 C 40 58, 60 60, 75 72 Z" fill="#EDE4CE" />
+                  <path d="M75 118 C 90 106, 110 104, 126 108 L 126 62 C 110 58, 90 60, 75 72 Z" fill="#EDE4CE" />
+                  <path d="M75 72 L 75 118" />
+                  <path d="M86 80 L 116 84" strokeWidth="3" opacity="0.55" />
+                  <path d="M86 90 L 112 93.5" strokeWidth="3" opacity="0.55" />
+                </g>
+                <path d="M75 58 C 71 46, 76 40, 74 28 C 82 38, 84 48, 79 58 Z" fill="#C9843E" />
+                <circle cx="88" cy="34" r="3.2" fill="#C9843E" />
+                <circle cx="63" cy="42" r="2.4" fill="#C9843E" />
+              </svg>
+            ) : (
+              <svg width="30" height="30" viewBox="0 0 150 150" fill="none" aria-label="Cinespire 로고">
+                <g stroke="#1E4E8C" strokeWidth="4.5" strokeLinejoin="round" strokeLinecap="round">
+                  <path d="M27 68 L 118 52 L 122 70 L 31 86 Z" fill="#1E4E8C" />
+                  <g stroke="#EAF4FC" strokeWidth="4.5">
+                    <path d="M45 65.5 L 52 78.5" />
+                    <path d="M63 62.5 L 70 75.5" />
+                    <path d="M81 59.5 L 88 72.5" />
+                    <path d="M99 56.5 L 106 69.5" />
+                  </g>
+                </g>
+                <g stroke="#1E4E8C" strokeWidth="4.5" strokeLinejoin="round" strokeLinecap="round">
+                  <rect x="30" y="88" width="90" height="40" rx="6" fill="#EAF4FC" />
+                  <path d="M42 102 L 108 102" strokeWidth="3.4" opacity="0.5" />
+                  <path d="M42 114 L 92 114" strokeWidth="3.4" opacity="0.5" />
+                </g>
+                <path d="M76 44 C 72 32, 77 26, 75 14 C 83 24, 85 34, 80 44 Z" fill="#2E8BD6" />
+                <circle cx="90" cy="22" r="3.2" fill="#2E8BD6" />
+                <circle cx="64" cy="28" r="2.4" fill="#2E8BD6" />
+              </svg>
+            )}
+            <span className={`font-[family-name:var(--font-brand)] font-semibold text-[26px] tracking-[0.5px] ${BRAND[cat].nameCls}`}>
+              {BRAND[cat].name}<span className={BRAND[cat].spireCls}>spire</span>
             </span>
           </div>
           <div className="mt-6 inline-flex rounded-full border border-[var(--chip-border)] bg-[var(--composer-bg)] p-[3px]">
