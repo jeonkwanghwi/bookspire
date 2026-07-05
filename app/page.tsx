@@ -38,15 +38,23 @@ const BRAND = {
   movie: { name: "Cine", nameCls: "text-[#203A54]", spireCls: "text-[#1E4E8C]" },
 } as const;
 
-const NICKNAMES = [
-  "한밤의독자", "책장넘기는소리", "조용한오후", "문장수집가",
-  "여백을읽다", "오늘의밑줄", "창밖을보며", "느린페이지",
+const NICK_ADJ = [
+  "조용한", "느린", "한밤의", "새벽의", "창가의", "오후의", "골목의", "심야의",
+  "일요일의", "흐린날의", "비오는날의", "다정한", "무심한", "게으른", "낯선", "방랑하는",
+];
+
+const NICK_NOUN = [
+  "독자", "관객", "문장수집가", "산책자", "기록자", "몽상가", "여행자", "낭독자",
+  "필사가", "사서", "시인", "편집자", "목격자", "밑줄", "페이지", "서재", "상영관", "이야기꾼",
 ];
 
 function myNickname() {
   let name = localStorage.getItem("bookspire:nickname");
   if (!name) {
-    name = NICKNAMES[Math.floor(Math.random() * NICKNAMES.length)] + Math.floor(Math.random() * 900 + 100);
+    name =
+      NICK_ADJ[Math.floor(Math.random() * NICK_ADJ.length)] +
+      NICK_NOUN[Math.floor(Math.random() * NICK_NOUN.length)] +
+      Math.floor(Math.random() * 900 + 100);
     localStorage.setItem("bookspire:nickname", name);
   }
   return name;
