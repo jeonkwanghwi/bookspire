@@ -363,7 +363,7 @@ export default function Home() {
             aria-hidden
             className={`absolute inset-0 [background:linear-gradient(to_top,#e2eef6_72%,transparent)] transition-opacity duration-500 ${cat === "movie" ? "opacity-100" : "opacity-0"}`}
           />
-          <div className="relative bg-[var(--composer-bg)] border border-[var(--chip-border)] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5 transition-all duration-200 focus-within:border-[var(--accent)] focus-within:shadow-[0_4px_22px_rgba(58,46,36,0.12)]">
+          <div className="relative bg-[var(--composer-bg)] border border-[var(--chip-border)] rounded-lg py-3 pr-3 pl-4 shadow-[0_4px_18px_rgba(58,46,36,0.07)] flex flex-col gap-2.5 transition-all duration-200 focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)] focus-within:shadow-[0_4px_22px_rgba(58,46,36,0.12)]">
             <textarea
               ref={quoteRef}
               value={draftQuote}
