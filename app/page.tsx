@@ -146,6 +146,7 @@ export default function Home() {
 
   const removeNote = async (id: number) => {
     if (!confirm("이 글을 삭제할까요?")) return;
+    if (!confirm("정말로 삭제하시겠습니까?")) return;
     const res = await fetch(`/api/notes/${id}`, {
       method: "DELETE",
       headers: { "x-admin-key": adminKey ?? "" },
