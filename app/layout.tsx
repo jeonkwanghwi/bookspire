@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Gowun_Batang, Newsreader, Public_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -52,7 +53,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className={`${newsreader.variable} ${gowunBatang.variable} ${cormorant.variable} ${publicSans.variable} antialiased`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
