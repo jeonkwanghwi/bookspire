@@ -150,6 +150,25 @@ export default function Home() {
     return arr;
   }, [notes, sort, search]);
 
+  // 명예의 전당: 최다 추천 구절 + 최다 기록 제목 (검색·정렬과 무관하게 카테고리 전체 기준)
+  const fame = useMemo(() => {
+    if (!notes?.length) return null;
+    const topNote = notes.reduce((a, b) => (b.likes > a.likes ? b : a));
+    const counts = new Map<string, { title: string; count: number }>();
+    for (const n of notes) {
+      const k = norm(n.book_title);
+      const e = counts.get(k);
+      if (e) e.count += 1;
+      else counts.set(k, { title: n.book_title, count: 1 });
+    }
+    let topTitle: { title: string; count: number } | null = null;
+    for (const e of counts.values()) if (!topTitle || e.count > topTitle.count) topTitle = e;
+    return {
+      topNote: topNote.likes > 0 ? topNote : null,
+      topTitle: topTitle && topTitle.count >= 2 ? topTitle : null,
+    };
+  }, [notes]);
+
   const switchCat = (c: Category) => {
     if (c === cat) return;
     setCat(c);
@@ -239,6 +258,42 @@ export default function Home() {
           <p className="fade-in absolute top-4 right-5 text-[11.5px] text-[var(--muted3)] tracking-[0.02em]">
             오늘 {visitors.toLocaleString()}번의 발걸음이 다녀갔어요
           </p>
+        )}
+        {fame && (fame.topNote || fame.topTitle) && (
+          <aside
+            key={`fame-${cat}`}
+            className="fade-in hidden min-[1200px]:block fixed top-[150px] right-[calc(50%+332px)] w-[224px]"
+          >
+            <h2 className="text-[11.5px] font-semibold tracking-[0.14em] text-[var(--accent-deep)]">
+              명예의 전당
+            </h2>
+            <div className="w-[22px] h-px bg-[var(--accent)] mt-2 mb-4 opacity-60" />
+            {fame.topNote && (
+              <section className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-4 pt-4 pb-3.5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]">
+                <p className="text-[10.5px] tracking-[0.08em] text-[var(--muted2)] mb-2">최다 추천 구절</p>
+                <p className="font-serif text-[14.5px] leading-normal text-[var(--ink)] text-pretty whitespace-pre-line [display:-webkit-box] [-webkit-line-clamp:4] [-webkit-box-orient:vertical] overflow-hidden">
+                  {fame.topNote.quote}
+                </p>
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <span className="font-serif italic text-[12px] text-[var(--title-ink)] truncate">
+                    {copy.wrap[0]}{fame.topNote.book_title}{copy.wrap[1]}
+                  </span>
+                  <span className="text-[11.5px] font-semibold text-[var(--accent-deep)] whitespace-nowrap">
+                    ♥ {fame.topNote.likes}
+                  </span>
+                </div>
+              </section>
+            )}
+            {fame.topTitle && (
+              <section className="mt-3 bg-[var(--card-bg)] border border-[var(--card-border)] rounded px-4 pt-4 pb-3.5 shadow-[0_1px_2px_rgba(58,46,36,0.03)]">
+                <p className="text-[10.5px] tracking-[0.08em] text-[var(--muted2)] mb-2">최다 기록 제목</p>
+                <p className="font-serif italic text-[14px] text-[var(--title-ink)]">
+                  {copy.wrap[0]}{fame.topTitle.title}{copy.wrap[1]}
+                </p>
+                <p className="mt-1 text-[11.5px] text-[var(--muted2)]">{fame.topTitle.count}개의 기록</p>
+              </section>
+            )}
+          </aside>
         )}
         <header className="pt-[54px] pb-[30px] px-7 text-center">
           <div key={cat} className="fade-in flex items-center justify-center gap-2">
